@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行列計算サイト</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
+</head>
+<body>
+
+    <h1>行列計算機 (2x2)</h1>
+
+    <div class="container">
+        <div class="matrix-container">
+            <h2>行列 A</h2>
+            <div class="matrix-grid">
+                <input type="number" id="a11" value="1">
+                <input type="number" id="a12" value="2">
+                <input type="number" id="a21" value="3">
+                <input type="number" id="a22" value="4">
+            </div>
+        </div>
+
+        <div class="matrix-container">
+            <h2>行列 B</h2>
+            <div class="matrix-grid">
+                <input type="number" id="b11" value="5">
+                <input type="number" id="b12" value="6">
+                <input type="number" id="b21" value="7">
+                <input type="number" id="b22" value="8">
+            </div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button id="addButton">和を計算 (A + B)</button>
+        <button id="multiplyButton">積を計算 (A × B)</button>
+    </div>
+
+    <div class="result-container">
+        <h2>計算結果</h2>
+        <div id="result">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

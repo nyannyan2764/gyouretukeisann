@@ -1,0 +1,74 @@
+body {
+    font-family: sans-serif;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.matrix-container {
+    width: 45%;
+}
+
+.matrix-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.matrix-grid input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2em;
+    text-align: center;
+    box-sizing: border-box; /* paddingを含めて幅を計算 */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.buttons {
+    text-align: center;
+    margin: 30px 0;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    margin: 0 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.result-container {
+    margin-top: 20px;
+}
+
+#result {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    min-height: 50px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+}
