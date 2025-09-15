@@ -1,185 +1,83 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements (変更なし) ---
-    const rowsInput = document.getElementById('rows');
-    const colsInput = document.getElementById('cols');
-    const matrixAContainer = document.getElementById('matrix-a-container');
-    const matrixBContainer = document.getElementById('matrix-b-container');
-    const resultTitle = document.getElementById('result-title');
-    const resultMatrixDiv = document.getElementById('result-matrix');
+// --- Settings Initialization ---
+const settings = {
+    theme: localStorage.getItem('matrixmaster-theme') || 'theme-hologram',
+    precision: parseInt(localStorage.getItem('matrixmaster-precision'), 10) || 4,
+    language: localStorage.getItem('matrixmaster-language') || 'ja',
+};
 
-    // ★★★ 新しい再帰関数：n×nの文字式での行列式を余因子展開で計算 ★★★
-    function symbolicDeterminant(matrix) {
-        const n = matrix.length;
+document.body.className = settings.theme;
 
-        // ベースケース：行列が1x1の場合
-        if (n === 1) {
-            return matrix[0][0];
-        }
-
-        // ベースケース：行列が2x2の場合（再帰の終点として効率化）
-        if (n === 2) {
-            const a = matrix[0][0];
-            const b = matrix[0][1];
-            const c = matrix[1][0];
-            const d = matrix[1][1];
-            return `((${a})*(${d}) - (${b})*(${c}))`;
-        }
-
-        let det = '';
-        // 再帰ステップ：第1行で余因子展開
-        for (let j = 0; j < n; j++) {
-            // 符号 (+ or -)
-            const sign = (j % 2 === 0) ? '+' : '-';
-            
-            // 第1行の要素
-            const element = matrix[0][j];
-
-            // 小行列（第1行とj列を除いた行列）を作成
-            const minor = matrix.slice(1).map(row => {
-                return row.filter((_, colIndex) => colIndex !== j);
-            });
-
-            // detに項を追加
-            if (j > 0 && det !== '') {
-                 det += ` ${sign} `;
-            } else if (j === 0) {
-                 det += (sign === '-') ? `${sign} ` : '';
-            }
-
-            // 再帰呼び出し！
-            det += `(${element}) * (${symbolicDeterminant(minor)})`;
-        }
-
-        return det;
+// --- Internationalization (i18n) ---
+const translations = {
+    ja: {
+        calculator_title: "計算機 - MatrixMaster",
+        nav_calculator: "計算機", nav_solver: "方程式ソルバー", nav_tutorials: "チュートリアル", nav_history: "履歴", nav_settings: "設定",
+        control_panel_title: "コントロールパネル", control_rows: "行数", control_cols: "列数",
+        op_binary: "二項演算 (A, B)", op_unary: "単項演算", op_scalar: "スカラー演算", op_decomposition: "行列分解",
+        op_det: "行列式", op_inv: "逆行列", op_eigs: "固有値/ベクトル", op_lu: "LU分解", op_qr: "QR分解",
+        result_title: "計算結果", result_placeholder: "ここに計算結果が表示されます。",
+        solver_title: "方程式ソルバー - MatrixMaster", solver_main_title: "連立一次方程式ソルバー (Ax = b)",
+        solver_size: "式の数（次元）", solver_solve_btn: "解を求める (x)",
+    },
+    en: {
+        calculator_title: "Calculator - MatrixMaster",
+        nav_calculator: "Calculator", nav_solver: "Equation Solver", nav_tutorials: "Tutorials", nav_history: "History", nav_settings: "Settings",
+        control_panel_title: "Control Panel", control_rows: "Rows", control_cols: "Cols",
+        op_binary: "Binary Operations (A, B)", op_unary: "Unary Operations", op_scalar: "Scalar Operations", op_decomposition: "Matrix Decomposition",
+        op_det: "Determinant", op_inv: "Inverse", op_eigs: "Eigenvalues/vectors", op_lu: "LU Decomposition", op_qr: "QR Decomposition",
+        result_title: "Result", result_placeholder: "Calculation results will be displayed here.",
+        solver_title: "Equation Solver - MatrixMaster", solver_main_title: "Linear Equation Solver (Ax = b)",
+        solver_size: "Number of Equations (Dimension)", solver_solve_btn: "Solve for (x)",
     }
+};
 
-    // --- 既存の関数（変更なし） ---
-    function createMatrixGrid(container, prefix, rows, cols) {
-        container.innerHTML = '';
-        container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        for (let i = 1; i <= rows; i++) {
-            for (let j = 1; j <= cols; j++) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = `${prefix}${i}${j}`;
-                input.placeholder = `${prefix}${i},${j}`;
-                container.appendChild(input);
-            }
-        }
-    }
-
-    function getMatrixValues(prefix, rows, cols) {
-        const matrix = [];
-        for (let i = 1; i <= rows; i++) {
-            const row = [];
-            for (let j = 1; j <= cols; j++) {
-                const input = document.getElementById(`${prefix}${i}${j}`);
-                const value = input.value.trim();
-                if (value === '') throw new Error(`行列 ${prefix.toUpperCase()} の (${i},${j}) が空です。`);
-                row.push(value);
-            }
-            matrix.push(row);
-        }
-        return matrix;
-    }
-
-    function displayResult(title, result) {
-        resultTitle.textContent = title;
-        resultMatrixDiv.innerHTML = '';
-        resultMatrixDiv.classList.remove('error');
-        window.lastResult = result;
-
-        if (typeof result === 'string') {
-             resultMatrixDiv.innerHTML = `<span>${result}</span>`;
-             return;
-        }
-
-        if (math.isMatrix(result) || Array.isArray(result)) {
-            const arrayResult = result.toArray ? result.toArray() : result;
-            let tableHTML = '<table>';
-            arrayResult.forEach(row => {
-                tableHTML += '<tr>';
-                row.forEach(cell => {
-                    const formattedCell = math.format(cell, { precision: 4 });
-                    tableHTML += `<td>${formattedCell}</td>`;
-                });
-                tableHTML += '</tr>';
-            });
-            tableHTML += '</table>';
-            resultMatrixDiv.innerHTML = tableHTML;
-        } else {
-            const formattedResult = math.format(result, { precision: 4 });
-            resultMatrixDiv.innerHTML = `<span>${formattedResult}</span>`;
-        }
-    }
-
-     function displayError(error) {
-        resultTitle.textContent = 'エラー';
-        resultMatrixDiv.innerHTML = error.message;
-        resultMatrixDiv.classList.add('error');
-        window.lastResult = null;
-    }
-
-    // --- Event Listeners (detの処理を変更) ---
-    function updateGrids() {
-        const rows = parseInt(rowsInput.value);
-        const cols = parseInt(colsInput.value);
-        if (isNaN(rows) || isNaN(cols) || rows < 1 || cols < 1) return;
-        createMatrixGrid(matrixAContainer, 'a', rows, cols);
-        createMatrixGrid(matrixBContainer, 'b', rows, cols);
-    }
-    
-    rowsInput.addEventListener('change', updateGrids);
-    colsInput.addEventListener('change', updateGrids);
-
-    document.querySelector('.operations-panel').addEventListener('click', (e) => {
-        if (!e.target.matches('.op-btn')) return;
-        
-        const op = e.target.dataset.op;
-        const rows = parseInt(rowsInput.value);
-        const cols = parseInt(colsInput.value);
-
-        try {
-            let matrixA, matrixB, result, title, targetMatrix, scalar;
-            const unaryTarget = document.getElementById('unary-target').value;
-
-            if (op === 'det') {
-                if (rows !== cols) throw new Error("行列式は正方行列でなければ計算できません。");
-                targetMatrix = getMatrixValues(unaryTarget, rows, cols);
-                title = `結果: det(${unaryTarget.toUpperCase()})`;
-                const isNumeric = targetMatrix.flat().every(val => !isNaN(parseFloat(val)) && isFinite(val));
-                
-                if (isNumeric) {
-                    result = math.det(math.matrix(targetMatrix));
-                } else {
-                    // ★★★ 新しいn×nの文字式計算関数を呼び出す ★★★
-                    result = symbolicDeterminant(targetMatrix);
-                }
-            }
-            // (他の演算の処理は変更なし)
-            else {
-                // ... (Omitted for brevity, paste the rest of your event listener code here)
-                 switch (op) {
-                    case 'add': case 'subtract': case 'multiply': case 'dotMultiply':
-                        // ...
-                        break;
-                    case 'inv': case 'transpose': case 'trace':
-                         // ...
-                        break;
-                    case 'scalarMultiply': case 'scalarDivide':
-                        // ...
-                        break;
-                }
-            }
-            
-            if (typeof result.simplify === 'function') result = result.simplify();
-            displayResult(title, result);
-
-        } catch (error) {
-            displayError(error);
+function applyLanguage(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (translations[lang] && translations[lang][key]) {
+            el.textContent = translations[lang][key];
         }
     });
+    document.title = translations[lang][document.title.dataset.i18n] || document.title;
+}
 
-    // --- Initial Setup ---
-    updateGrids();
+// --- Background Animation ---
+document.addEventListener('DOMContentLoaded', () => {
+    applyLanguage(settings.language);
+
+    const canvas = document.getElementById('background-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height, gridSpacing = 30, dotSize = 1, mouse = { x: null, y: null };
+
+    function init() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    init();
+
+    window.addEventListener('resize', init);
+    window.addEventListener('mousemove', e => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+    });
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = 'rgba(0, 246, 255, 0.1)';
+        
+        for (let x = 0; x < width; x += gridSpacing) {
+            for (let y = 0; y < height; y += gridSpacing) {
+                let dx = mouse.x - x;
+                let dy = mouse.y - y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                let opacity = Math.max(0, 1 - dist / 300);
+                ctx.fillStyle = `rgba(0, 246, 255, ${opacity * 0.3})`;
+                ctx.fillRect(x - dotSize, y - dotSize, dotSize * 2, dotSize * 2);
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
 });
