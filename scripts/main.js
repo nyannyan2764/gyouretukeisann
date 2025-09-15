@@ -1,10 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM Elements ---
     const rowsInput = document.getElementById('rows');
     const colsInput = document.getElementById('cols');
     const matrixAContainer = document.getElementById('matrix-a-container');
     const matrixBContainer = document.getElementById('matrix-b-container');
     const resultTitle = document.getElementById('result-title-text');
     const resultMatrixDiv = document.getElementById('result-matrix');
+
+    // ★★★ 追加：行列配列をHTMLテーブルに変換するヘルパー関数 ★★★
+    function renderMatrixAsTable(matrixArray) {
+        let tableHTML = '<table style="display: inline-block; vertical-align: middle; margin-left: 15px;">';
+        matrixArray.forEach(row => {
+            tableHTML += '<tr>';
+            row.forEach(cell => {
+                tableHTML += `<td style="padding: 10px;">${cell}</td>`;
+            });
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</table>';
+        return tableHTML;
+    }
 
     // --- Core Functions ---
     function createMatrixGrid(container, prefix, rows, cols) {
@@ -36,26 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return matrix;
     }
 
-    // n*n Symbolic Determinant by Cofactor Expansion
-    function symbolicDeterminant(matrix) {
-        const n = matrix.length;
-        if (n === 1) return matrix[0][0];
-        if (n === 2) return `((${matrix[0][0]})*(${matrix[1][1]}) - (${matrix[0][1]})*(${matrix[1][0]}))`;
-        
-        let det = '';
-        for (let j = 0; j < n; j++) {
-            const sign = (j % 2 === 0) ? '+' : '-';
-            const element = matrix[0][j];
-            const minor = matrix.slice(1).map(row => row.filter((_, colIndex) => colIndex !== j));
-            
-            if (j > 0) det += ` ${sign} `;
-            else if (sign === '-') det += `${sign} `;
-            
-            det += `(${element})*(${symbolicDeterminant(minor)})`;
-        }
-        return det;
-    }
-
     function displayResult(title, result, rawHtml = false) {
         resultTitle.textContent = title;
         resultMatrixDiv.innerHTML = '';
@@ -66,9 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
             resultMatrixDiv.innerHTML = result;
             return;
         }
-
+        
         if (typeof result === 'string' || typeof result === 'number') {
-            resultMatrixDiv.innerHTML = `<span>${math.format(result, {precision: settings.precision})}</span>`;
+             resultMatrixDiv.innerHTML = `<span>${math.format(result, {precision: settings.precision})}</span>`;
         } else if (result.values && result.vectors) { // Eigenvalues/vectors
             let html = '<strong>Eigenvalues:</strong><br><span>' + math.format(result.values, {precision: settings.precision}) + '</span><br><br>';
             html += '<strong>Eigenvectors:</strong><table>';
@@ -84,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resultMatrixDiv.innerHTML = html;
         } else if (result.L && result.U) { // LU Decomposition
             displayResult(title + " (L Matrix)", result.L);
-            // In a real app, you'd show P as well and have a better UI
         } else if(result.Q && result.R) { // QR Decomposition
             displayResult(title + " (Q Matrix)", result.Q);
         }
@@ -146,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 result = math[op](math.matrix(matrixA), math.matrix(matrixB));
                 title = `Result: A ${op === 'multiply' ? '×' : op === 'add' ? '+' : '-'} B`;
                 saveToHistory({op, matrixA, matrixB});
+                displayResult(title, result);
 
             } else if (op === 'scalarMultiply') {
                 matrixA = getMatrixValues('a', rows, cols);
@@ -153,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 result = math.evaluate(`A * k`, {A: math.matrix(matrixA), k: scalar});
                 title = `Result: ${scalar} × A`;
                 saveToHistory({op, matrixA, scalar});
+                displayResult(title, result);
 
             } else { // Unary and Decomposition
                 const targetPrefix = document.getElementById(op === 'lu' || op === 'qr' ? 'decomposition-target' : 'unary-target').value;
@@ -160,29 +156,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isNumeric = targetMatrix.flat().every(val => !isNaN(parseFloat(val)) && isFinite(val));
                 title = `Result: ${op}(${targetPrefix.toUpperCase()})`;
 
-                if (op === 'det') {
-                    if(rows !== cols) throw new Error("Determinant requires a square matrix.");
-                    result = isNumeric ? math.det(targetMatrix) : symbolicDeterminant(targetMatrix);
-                } else if (op === 'inv') {
-                    if(rows !== cols) throw new Error("Inverse requires a square matrix.");
-                    if(!isNumeric) throw new Error("Symbolic inverse is only supported for 2x2 matrices in this version.");
-                    result = math.inv(targetMatrix);
-                } else { // eigs, lu, qr need numeric values
-                    if(!isNumeric) throw new Error(`Operation "${op}" requires all matrix elements to be numbers.`);
+                if (isNumeric) {
+                    if ((op === 'det' || op === 'inv' || op === 'eigs' || op === 'lu') && rows !== cols) {
+                        throw new Error(`Operation "${op}" requires a square matrix.`);
+                    }
                     result = math[op](targetMatrix);
+                    saveToHistory({op, matrix: targetMatrix});
+                    displayResult(title, result);
+                } else { // Symbolic Calculation
+                    if (rows !== cols) throw new Error("Symbolic calculation requires a square matrix.");
+                    
+                    if (op === 'det') {
+                        result = symbolicDeterminant(targetMatrix);
+                        saveToHistory({op, matrix: targetMatrix});
+                        displayResult(title, result);
+                    } else if (op === 'inv') {
+                        const invResult = symbolicInverse(targetMatrix);
+                        const htmlResult = `<span>1 / ${invResult.determinant}</span>` + renderMatrixAsTable(invResult.adjugate);
+                        saveToHistory({op, matrix: targetMatrix});
+                        displayResult(title, htmlResult, true);
+                    } else if (op === 'transpose') {
+                        result = math.transpose(targetMatrix);
+                        saveToHistory({op, matrix: targetMatrix});
+                        displayResult(title, result);
+                    } else {
+                        throw new Error(`Symbolic calculation for "${op}" is not supported.`);
+                    }
                 }
-                saveToHistory({op, matrix: targetMatrix});
             }
-            
-            displayResult(title, result);
-
         } catch (error) {
             displayError(error);
         }
     });
 
     // Toolbar listeners...
-    
+    document.querySelector('.matrix-area').addEventListener('click', (e) => {
+        const btn = e.target.closest('.tool-btn');
+        if (!btn) return;
+
+        const target = btn.dataset.target;
+        const action = btn.dataset.action;
+        const rows = parseInt(rowsInput.value);
+        const cols = parseInt(colsInput.value);
+
+        for (let i = 1; i <= rows; i++) {
+            for (let j = 1; j <= cols; j++) {
+                const input = document.getElementById(`${target}${i}${j}`);
+                if (action === 'clear') {
+                    input.value = '';
+                } else if (action === 'identity') {
+                    if(rows !== cols) { displayError(new Error("Identity matrix must be square.")); return; }
+                    input.value = (i === j) ? '1' : '0';
+                }
+            }
+        }
+        if(action === 'transpose') {
+            if(rows !== cols) { displayError(new Error("In-place transpose is only supported for square matrices in this UI.")); return; }
+            const currentMatrix = getMatrixValues(target, rows, cols);
+            const transposed = math.transpose(currentMatrix);
+            for (let i = 1; i <= rows; i++) {
+                for (let j = 1; j <= cols; j++) {
+                    document.getElementById(`${target}${i}${j}`).value = transposed[i-1][j-1];
+                }
+            }
+        }
+    });
+
+     document.getElementById('copy-latex').addEventListener('click', () => {
+        if (window.lastResult) {
+            try {
+                const latexString = math.format(window.lastResult, {notation: 'latex'});
+                navigator.clipboard.writeText(latexString);
+            } catch(e) {
+                // For raw html results or strings
+                navigator.clipboard.writeText(window.lastResult.toString());
+            }
+        }
+    });
+
     // Restore from history if available
     const restoredState = localStorage.getItem('matrixmaster-restore');
     if (restoredState) {
@@ -196,7 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 1; i <= rows; i++) {
             for (let j = 1; j <= cols; j++) {
                 document.getElementById(`a${i}${j}`).value = matrixA[i-1][j-1];
-                if(matrixB) document.getElementById(`b${i}${j}`).value = matrixB[i-1][j-1];
+                if(matrixB && document.getElementById(`b${i}${j}`)) {
+                     document.getElementById(`b${i}${j}`).value = matrixB[i-1][j-1];
+                }
             }
         }
         localStorage.removeItem('matrixmaster-restore');
