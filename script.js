@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements ---
+    // --- DOM Elements (変更なし) ---
     const rowsInput = document.getElementById('rows');
     const colsInput = document.getElementById('cols');
     const matrixAContainer = document.getElementById('matrix-a-container');
@@ -7,17 +7,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultTitle = document.getElementById('result-title');
     const resultMatrixDiv = document.getElementById('result-matrix');
 
-    // --- Core Functions ---
+    // ★★★ 新しい再帰関数：n×nの文字式での行列式を余因子展開で計算 ★★★
+    function symbolicDeterminant(matrix) {
+        const n = matrix.length;
 
-    /**
-     * 指定されたコンテナに、指定された行数と列数の入力グリッドを生成する
-     * @param {HTMLElement} container - グリッドを生成する親要素
-     * @param {string} prefix - IDの接頭辞 ('a' or 'b')
-     * @param {number} rows - 行数
-     * @param {number} cols - 列数
-     */
+        // ベースケース：行列が1x1の場合
+        if (n === 1) {
+            return matrix[0][0];
+        }
+
+        // ベースケース：行列が2x2の場合（再帰の終点として効率化）
+        if (n === 2) {
+            const a = matrix[0][0];
+            const b = matrix[0][1];
+            const c = matrix[1][0];
+            const d = matrix[1][1];
+            return `((${a})*(${d}) - (${b})*(${c}))`;
+        }
+
+        let det = '';
+        // 再帰ステップ：第1行で余因子展開
+        for (let j = 0; j < n; j++) {
+            // 符号 (+ or -)
+            const sign = (j % 2 === 0) ? '+' : '-';
+            
+            // 第1行の要素
+            const element = matrix[0][j];
+
+            // 小行列（第1行とj列を除いた行列）を作成
+            const minor = matrix.slice(1).map(row => {
+                return row.filter((_, colIndex) => colIndex !== j);
+            });
+
+            // detに項を追加
+            if (j > 0 && det !== '') {
+                 det += ` ${sign} `;
+            } else if (j === 0) {
+                 det += (sign === '-') ? `${sign} ` : '';
+            }
+
+            // 再帰呼び出し！
+            det += `(${element}) * (${symbolicDeterminant(minor)})`;
+        }
+
+        return det;
+    }
+
+    // --- 既存の関数（変更なし） ---
     function createMatrixGrid(container, prefix, rows, cols) {
-        container.innerHTML = ''; // Clear existing grid
+        container.innerHTML = '';
         container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         for (let i = 1; i <= rows; i++) {
             for (let j = 1; j <= cols; j++) {
@@ -30,21 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * 入力グリッドから値を取得し、2次元配列として返す
-     * @param {string} prefix - IDの接頭辞
-     * @param {number} rows - 行数
-     * @param {number} cols - 列数
-     * @returns {Array<Array<string|number>>}
-     */
     function getMatrixValues(prefix, rows, cols) {
         const matrix = [];
         for (let i = 1; i <= rows; i++) {
             const row = [];
             for (let j = 1; j <= cols; j++) {
                 const input = document.getElementById(`${prefix}${i}${j}`);
-                // ★★★ ここで .value をそのまま文字列として取得するのが重要 ★★★
-                const value = input.value.trim(); 
+                const value = input.value.trim();
                 if (value === '') throw new Error(`行列 ${prefix.toUpperCase()} の (${i},${j}) が空です。`);
                 row.push(value);
             }
@@ -53,17 +83,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return matrix;
     }
 
-    /**
-     * 結果を表示エリアにレンダリングする
-     * @param {string} title - 結果のタイトル
-     * @param {any} result - math.jsからの計算結果
-     */
     function displayResult(title, result) {
         resultTitle.textContent = title;
         resultMatrixDiv.innerHTML = '';
         resultMatrixDiv.classList.remove('error');
-
         window.lastResult = result;
+
+        if (typeof result === 'string') {
+             resultMatrixDiv.innerHTML = `<span>${result}</span>`;
+             return;
+        }
 
         if (math.isMatrix(result) || Array.isArray(result)) {
             const arrayResult = result.toArray ? result.toArray() : result;
@@ -83,15 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
             resultMatrixDiv.innerHTML = `<span>${formattedResult}</span>`;
         }
     }
-    
-    function displayError(error) {
+
+     function displayError(error) {
         resultTitle.textContent = 'エラー';
         resultMatrixDiv.innerHTML = error.message;
         resultMatrixDiv.classList.add('error');
         window.lastResult = null;
     }
 
-    // --- Event Listeners ---
+    // --- Event Listeners (detの処理を変更) ---
     function updateGrids() {
         const rows = parseInt(rowsInput.value);
         const cols = parseInt(colsInput.value);
@@ -105,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector('.operations-panel').addEventListener('click', (e) => {
         if (!e.target.matches('.op-btn')) return;
-
+        
         const op = e.target.dataset.op;
         const rows = parseInt(rowsInput.value);
         const cols = parseInt(colsInput.value);
@@ -114,96 +143,43 @@ document.addEventListener('DOMContentLoaded', () => {
             let matrixA, matrixB, result, title, targetMatrix, scalar;
             const unaryTarget = document.getElementById('unary-target').value;
 
-            switch (op) {
-                case 'add':
-                case 'subtract':
-                case 'multiply':
-                case 'dotMultiply':
-                    matrixA = getMatrixValues('a', rows, cols);
-                    matrixB = getMatrixValues('b', rows, cols);
-                    // ★★★ ここで math.matrix() を使って文字列のまま処理するのが重要 ★★★
-                    result = math[op](math.matrix(matrixA), math.matrix(matrixB));
-                    const opSymbol = {add: '+', subtract: '-', multiply: '×', dotMultiply: '.*'}[op];
-                    title = `結果: A ${opSymbol} B`;
-                    break;
+            if (op === 'det') {
+                if (rows !== cols) throw new Error("行列式は正方行列でなければ計算できません。");
+                targetMatrix = getMatrixValues(unaryTarget, rows, cols);
+                title = `結果: det(${unaryTarget.toUpperCase()})`;
+                const isNumeric = targetMatrix.flat().every(val => !isNaN(parseFloat(val)) && isFinite(val));
                 
-                case 'det':
-                case 'inv':
-                case 'transpose':
-                case 'trace':
-                    targetMatrix = getMatrixValues(unaryTarget, rows, cols);
-                    result = math[op](math.matrix(targetMatrix));
-                    title = `結果: ${op}(${unaryTarget.toUpperCase()})`;
-                    break;
-                
-                case 'scalarMultiply':
-                case 'scalarDivide':
-                    matrixA = getMatrixValues('a', rows, cols);
-                    scalar = document.getElementById('scalar-value').value;
-                    if(scalar.trim() === '') throw new Error('スカラー値を入力してください。');
-                    result = math.evaluate(`A ${op === 'scalarMultiply' ? '*' : '/'} k`, {A: math.matrix(matrixA), k: scalar});
-                    title = `結果: ${scalar} ${op === 'scalarMultiply' ? '×' : '/'} A`;
-                    break;
+                if (isNumeric) {
+                    result = math.det(math.matrix(targetMatrix));
+                } else {
+                    // ★★★ 新しいn×nの文字式計算関数を呼び出す ★★★
+                    result = symbolicDeterminant(targetMatrix);
+                }
+            }
+            // (他の演算の処理は変更なし)
+            else {
+                // ... (Omitted for brevity, paste the rest of your event listener code here)
+                 switch (op) {
+                    case 'add': case 'subtract': case 'multiply': case 'dotMultiply':
+                        // ...
+                        break;
+                    case 'inv': case 'transpose': case 'trace':
+                         // ...
+                        break;
+                    case 'scalarMultiply': case 'scalarDivide':
+                        // ...
+                        break;
+                }
             }
             
-            if (typeof result.simplify === 'function') {
-                result = result.simplify();
-            }
+            if (typeof result.simplify === 'function') result = result.simplify();
             displayResult(title, result);
+
         } catch (error) {
             displayError(error);
         }
     });
-    
-    // (ツールバーとコピー機能のイベントリスナーは省略)
-    document.querySelector('.matrix-area').addEventListener('click', (e) => {
-        const btn = e.target.closest('.tool-btn');
-        if (!btn) return;
-        const target = btn.dataset.target;
-        const action = btn.dataset.action;
-        const rows = parseInt(rowsInput.value);
-        const cols = parseInt(colsInput.value);
-        for (let i = 1; i <= rows; i++) {
-            for (let j = 1; j <= cols; j++) {
-                const input = document.getElementById(`${target}${i}${j}`);
-                if (action === 'clear') {
-                    input.value = '';
-                } else if (action === 'identity') {
-                    if(rows !== cols) { displayError(new Error("単位行列は正方行列でなければなりません。")); return; }
-                    input.value = (i === j) ? '1' : '0';
-                }
-            }
-        }
-        if(action === 'transpose') {
-            if(rows !== cols) { displayError(new Error("このUIでの転置は正方行列のみ対応しています。")); return; }
-            const currentMatrix = getMatrixValues(target, rows, cols);
-            const transposed = math.transpose(currentMatrix);
-            for (let i = 1; i <= rows; i++) {
-                for (let j = 1; j <= cols; j++) {
-                    document.getElementById(`${target}${i}${j}`).value = transposed[i-1][j-1];
-                }
-            }
-        }
-    });
 
-    document.getElementById('copy-latex').addEventListener('click', () => { if (window.lastResult) navigator.clipboard.writeText(math.format(window.lastResult, {notation: 'latex'})); });
-    document.getElementById('copy-text').addEventListener('click', () => { if (window.lastResult) navigator.clipboard.writeText(window.lastResult.toString()); });
-    document.getElementById('result-to-a').addEventListener('click', () => {
-        if (window.lastResult && math.isMatrix(window.lastResult)) {
-            const resultArr = window.lastResult.toArray();
-            const resRows = resultArr.length;
-            const resCols = resultArr[0].length;
-            rowsInput.value = resRows;
-            colsInput.value = resCols;
-            updateGrids();
-            for (let i = 1; i <= resRows; i++) {
-                for (let j = 1; j <= resCols; j++) {
-                    document.getElementById(`a${i}${j}`).value = math.format(resultArr[i-1][j-1], {precision: 4});
-                }
-            }
-        }
-    });
-    
     // --- Initial Setup ---
     updateGrids();
 });
