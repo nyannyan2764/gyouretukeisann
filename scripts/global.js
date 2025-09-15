@@ -1,3 +1,5 @@
+// === scripts/global.js (完全版) ===
+
 // --- Settings Initialization ---
 const settings = {
     theme: localStorage.getItem('matrixmaster-theme') || 'theme-hologram',
@@ -11,34 +13,88 @@ document.body.className = settings.theme;
 const translations = {
     ja: {
         calculator_title: "計算機 - MatrixMaster",
-        nav_calculator: "計算機", nav_solver: "方程式ソルバー", nav_tutorials: "チュートリアル", nav_history: "履歴", nav_settings: "設定",
-        control_panel_title: "コントロールパネル", control_rows: "行数", control_cols: "列数",
-        op_binary: "二項演算 (A, B)", op_unary: "単項演算", op_scalar: "スカラー演算", op_decomposition: "行列分解",
-        op_det: "行列式", op_inv: "逆行列", op_eigs: "固有値/ベクトル", op_lu: "LU分解", op_qr: "QR分解",
-        result_title: "計算結果", result_placeholder: "ここに計算結果が表示されます。",
-        solver_title: "方程式ソルバー - MatrixMaster", solver_main_title: "連立一次方程式ソルバー (Ax = b)",
-        solver_size: "式の数（次元）", solver_solve_btn: "解を求める (x)",
+        solver_title: "方程式ソルバー - MatrixMaster",
+        tutorials_title: "チュートリアル - MatrixMaster",
+        history_title: "計算履歴 - MatrixMaster",
+        settings_title: "設定 - MatrixMaster",
+        nav_calculator: "計算機", 
+        nav_solver: "方程式ソルバー", 
+        nav_tutorials: "チュートリアル", 
+        nav_history: "履歴", 
+        nav_settings: "設定",
+        control_panel_title: "コントロールパネル", 
+        control_rows: "行数", 
+        control_cols: "列数",
+        op_binary: "二項演算 (A, B)", 
+        op_unary: "単項演算", 
+        op_scalar: "スカラー演算", 
+        op_decomposition: "行列分解",
+        op_det: "行列式", 
+        op_inv: "逆行列", 
+        op_eigs: "固有値/ベクトル", 
+        op_lu: "LU分解", 
+        op_qr: "QR分解",
+        result_title: "計算結果", 
+        result_placeholder: "ここに計算結果が表示されます。",
+        solver_main_title: "連立一次方程式ソルバー (Ax = b)",
+        solver_size: "式の数（次元）", 
+        solver_solve_btn: "解を求める (x)",
+        history_main_title: "計算履歴",
+        history_clear_btn: "履歴を全消去",
+        settings_main_title: "アプリケーション設定"
     },
     en: {
         calculator_title: "Calculator - MatrixMaster",
-        nav_calculator: "Calculator", nav_solver: "Equation Solver", nav_tutorials: "Tutorials", nav_history: "History", nav_settings: "Settings",
-        control_panel_title: "Control Panel", control_rows: "Rows", control_cols: "Cols",
-        op_binary: "Binary Operations (A, B)", op_unary: "Unary Operations", op_scalar: "Scalar Operations", op_decomposition: "Matrix Decomposition",
-        op_det: "Determinant", op_inv: "Inverse", op_eigs: "Eigenvalues/vectors", op_lu: "LU Decomposition", op_qr: "QR Decomposition",
-        result_title: "Result", result_placeholder: "Calculation results will be displayed here.",
-        solver_title: "Equation Solver - MatrixMaster", solver_main_title: "Linear Equation Solver (Ax = b)",
-        solver_size: "Number of Equations (Dimension)", solver_solve_btn: "Solve for (x)",
+        solver_title: "Equation Solver - MatrixMaster",
+        tutorials_title: "Tutorials - MatrixMaster",
+        history_title: "History - MatrixMaster",
+        settings_title: "Settings - MatrixMaster",
+        nav_calculator: "Calculator", 
+        nav_solver: "Equation Solver", 
+        nav_tutorials: "Tutorials", 
+        nav_history: "History", 
+        nav_settings: "Settings",
+        control_panel_title: "Control Panel", 
+        control_rows: "Rows", 
+        control_cols: "Cols",
+        op_binary: "Binary Operations (A, B)", 
+        op_unary: "Unary Operations", 
+        op_scalar: "Scalar Operations", 
+        op_decomposition: "Matrix Decomposition",
+        op_det: "Determinant", 
+        op_inv: "Inverse", 
+        op_eigs: "Eigenvalues/vectors", 
+        op_lu: "LU Decomposition", 
+        op_qr: "QR Decomposition",
+        result_title: "Result", 
+        result_placeholder: "Calculation results will be displayed here.",
+        solver_main_title: "Linear Equation Solver (Ax = b)",
+        solver_size: "Number of Equations (Dimension)", 
+        solver_solve_btn: "Solve for (x)",
+        history_main_title: "Calculation History",
+        history_clear_btn: "Clear All History",
+        settings_main_title: "Application Settings"
     }
 };
 
 function applyLanguage(lang) {
+    const langData = translations[lang];
+    if (!langData) {
+        console.error(`Language data for "${lang}" not found.`);
+        return;
+    }
+    
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.dataset.i18n;
-        if (translations[lang] && translations[lang][key]) {
-            el.textContent = translations[lang][key];
+        if (langData[key]) {
+            el.textContent = langData[key];
         }
     });
-    document.title = translations[lang][document.title.dataset.i18n] || document.title;
+    
+    const titleKey = document.title.dataset.i18n;
+    if (titleKey && langData[titleKey]) {
+        document.title = langData[titleKey];
+    }
 }
 
 // --- Background Animation ---
@@ -73,7 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 let dist = Math.sqrt(dx * dx + dy * dy);
                 
                 let opacity = Math.max(0, 1 - dist / 300);
-                ctx.fillStyle = `rgba(0, 246, 255, ${opacity * 0.3})`;
+                if (settings.theme === 'theme-light') {
+                     ctx.fillStyle = `rgba(0, 123, 255, ${opacity * 0.3})`;
+                } else {
+                     ctx.fillStyle = `rgba(0, 246, 255, ${opacity * 0.3})`;
+                }
                 ctx.fillRect(x - dotSize, y - dotSize, dotSize * 2, dotSize * 2);
             }
         }
