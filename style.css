@@ -307,3 +307,47 @@ h2 {
         text-align: center;
     }
 }
+
+/* === Tutorial Page Styles === */
+.tutorial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.tutorial-card {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tutorial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 25px var(--shadow-color);
+}
+
+.tutorial-card h3 {
+    color: var(--accent-secondary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tutorial-card p {
+    color: var(--text-secondary);
+    flex-grow: 1; /* 内容の高さが違ってもボタンの位置を揃える */
+    margin-bottom: 1rem;
+}
+
+.example-matrix {
+    background-color: var(--bg-main);
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-mono);
+}
