@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定 - MatrixMaster</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <i class="fa-solid fa-table-cells"></i>
+            <h1>MatrixMaster</h1>
+        </div>
+        <nav>
+            <a href="./index.html">計算機</a>
+            <a href="./tutorials.html">チュートリアル</a>
+            <a href="./history.html">履歴</a>
+            <a href="./settings.html" class="active"><i class="fa-solid fa-gear"></i> 設定</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="content-wrapper" style="background-color: var(--bg-panel); padding: 2rem; border-radius: 8px;">
+            <h2 style="font-size: 2rem; color: var(--accent-secondary); border-bottom: 2px solid var(--accent-primary); padding-bottom: 1rem; margin-bottom: 2rem;"><i class="fa-solid fa-sliders"></i> アプリケーション設定</h2>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <h3><i class="fa-solid fa-palette"></i> テーマ設定</h3>
+                    <p>インターフェースの見た目を変更します。</p>
+                </div>
+                <div class="setting-control">
+                    <select>
+                        <option>ダーク (MatrixMaster Dark)</option>
+                        <option>ライト (Classic Light)</option>
+                        <option>システム設定に合わせる</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <h3><i class="fa-solid fa-calculator"></i> 計算精度</h3>
+                    <p>結果表示時の小数点以下の桁数を設定します。</p>
+                </div>
+                <div class="setting-control">
+                    <input type="number" value="4" min="0" max="14">
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">
+                    <h3><i class="fa-solid fa-language"></i> 言語</h3>
+                    <p>表示言語を選択します。</p>
+                </div>
+                <div class="setting-control">
+                     <select>
+                        <option>日本語</option>
+                        <option>English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 MatrixMaster Industries. All rights reserved.</p>
+    </footer>
+
+     <style>
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border-color); }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label h3 { margin-bottom: 0.25rem; }
+        .setting-label p { color: var(--text-secondary); font-size: 0.9rem; }
+        .setting-control select, .setting-control input { padding: 0.75rem; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 5px; font-family: var(--font-main); width: 250px; }
+    </style>
+</body>
+</html>
