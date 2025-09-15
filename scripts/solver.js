@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const size = parseInt(sizeInput.value, 10);
         if (isNaN(size) || size < 2) return;
 
-        // Create Matrix A grid
         matrixAContainer.innerHTML = '';
         matrixAContainer.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
         for (let i = 1; i <= size; i++) {
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Create Vector B grid
         vectorBContainer.innerHTML = '';
         vectorBContainer.style.gridTemplateColumns = '1fr';
         for (let i = 1; i <= size; i++) {
@@ -57,6 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return { matrixA, vectorB };
     }
+    
+    // --- History (main.jsから移植) ---
+    function saveToHistory(entry) {
+        let history = JSON.parse(localStorage.getItem('matrixmaster-history')) || [];
+        entry.id = Date.now();
+        history.unshift(entry);
+        if (history.length > 50) history.pop();
+        localStorage.setItem('matrixmaster-history', JSON.stringify(history));
+    }
 
     solveButton.addEventListener('click', () => {
         try {
@@ -66,17 +73,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error("Equation solver requires all elements to be numbers.");
             }
 
-            const result = math.lusolve(matrixA, vectorB);
+            // ★★★ ここが修正された計算部分 ★★★
+            const lup = math.lup(matrixA);
+            const result = math.lusolve(lup, vectorB);
 
             resultTitle.textContent = "Solution Vector x";
             resultMatrixDiv.classList.remove('error');
             
+            // ★★★ 結果表示を改善 ★★★
             let tableHTML = '<table>';
-            result.toArray().forEach(val => {
-                tableHTML += `<tr><td>${math.format(val, {precision: settings.precision})}</td></tr>`;
+            result.toArray().forEach((val, index) => {
+                tableHTML += `<tr><td style="text-align: right; padding-right: 10px;">x${index + 1} =</td><td style="text-align: left;">${math.format(val, {precision: settings.precision})}</td></tr>`;
             });
             tableHTML += '</table>';
             resultMatrixDiv.innerHTML = tableHTML;
+            
+            // ★★★ 履歴保存機能を追加 ★★★
+            saveToHistory({op: 'solve Ax=b', matrixA, vectorB });
 
         } catch (error) {
             resultTitle.textContent = 'Error';
@@ -86,5 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sizeInput.addEventListener('change', createSolverGrids);
-    createSolverGrids(); // Initial setup
+    
+    // Restore from tutorial if available
+    const restoredState = localStorage.getItem('matrixmaster-solver-restore');
+    if (restoredState) {
+        const { matrixA, vectorB, size } = JSON.parse(restoredState);
+        sizeInput.value = size;
+        createSolverGrids();
+
+        for (let i = 1; i <= size; i++) {
+            for (let j = 1; j <= size; j++) {
+                document.getElementById(`a${i}${j}`).value = matrixA[i - 1][j - 1];
+            }
+            document.getElementById(`b${i}`).value = vectorB[i - 1];
+        }
+        localStorage.removeItem('matrixmaster-solver-restore');
+    } else {
+        createSolverGrids(); // Initial setup
+    }
 });
