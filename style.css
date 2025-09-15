@@ -65,8 +65,6 @@ body {
     background-color: rgba(2, 4, 24, 0.5);
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 20px var(--shadow-color);
-    position: sticky;
-    top: 0;
     z-index: 1000;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
