@@ -307,3 +307,29 @@ h2 {
         text-align: center;
     }
 }
+
+/* === Tutorial Page Refinements === */
+.tutorial-intro {
+    margin-bottom: 2.5rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.tutorial-card .tutorial-desc {
+    color: var(--text-secondary);
+    flex-grow: 1; 
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.tutorial-card .formula {
+    background-color: var(--bg-main);
+    padding: 1.5rem;
+    border-radius: 5px;
+    margin: 0.5rem 0 1.5rem 0;
+    font-size: 1.2rem; /* KaTeXの基本サイズ */
+    text-align: center;
+    overflow-x: auto; /* スマホで数式がはみ出た場合にスクロール */
+}
