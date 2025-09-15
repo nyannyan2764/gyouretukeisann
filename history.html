@@ -1,66 +1,31 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>計算履歴 - MatrixMaster</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <title data-i18n="history_title">計算履歴 - MatrixMaster</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
+<body class="theme-hologram">
+    <canvas id="background-canvas"></canvas>
     <header class="main-header">
-        <div class="logo">
-            <i class="fa-solid fa-table-cells"></i>
-            <h1>MatrixMaster</h1>
-        </div>
         <nav>
-            <a href="./index.html">計算機</a>
-            <a href="./tutorials.html">チュートリアル</a>
-            <a href="./history.html" class="active">履歴</a>
-            <a href="./settings.html"><i class="fa-solid fa-gear"></i> 設定</a>
-        </nav>
+             <a href="./index.html" data-i18n="nav_calculator">計算機</a>
+             <a href="./history.html" class="active" data-i18n="nav_history">履歴</a>
+            </nav>
     </header>
-
     <main class="main-content">
-        <div class="content-wrapper" style="background-color: var(--bg-panel); padding: 2rem; border-radius: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent-primary); padding-bottom: 1rem; margin-bottom: 2rem;">
-                 <h2 style="font-size: 2rem; color: var(--accent-secondary); border: none; margin: 0;"><i class="fa-solid fa-clock-rotate-left"></i> 計算履歴</h2>
-                 <button class="tool-btn" style="background-color: var(--error-color); border-color: var(--error-color); color: #fff;"><i class="fa-solid fa-trash"></i> 履歴を全消去</button>
+        <div class="panel">
+            <div class="panel-header">
+                <h2 data-i18n="history_main_title"><i class="fa-solid fa-clock-rotate-left"></i> 計算履歴</h2>
+                <button id="clear-history" class="tool-btn" style="background-color: var(--error-color); border-color: var(--error-color); color: #fff;">
+                    <i class="fa-solid fa-trash"></i> <span data-i18n="history_clear_btn">履歴を全消去</span>
+                </button>
             </div>
-
-            <div class="history-list">
-                <div class="history-item">
-                    <span class="history-op">A + B</span>
-                    <span class="history-date">2025/09/15 20:00</span>
-                    <button class="tool-btn">復元</button>
+            <div id="history-list">
                 </div>
-                <div class="history-item">
-                    <span class="history-op">det(A)</span>
-                    <span class="history-date">2025/09/15 19:58</span>
-                    <button class="tool-btn">復元</button>
-                </div>
-                <div class="history-item">
-                    <span class="history-op">k × A</span>
-                    <span class="history-date">2025/09/15 19:55</span>
-                    <button class="tool-btn">復元</button>
-                </div>
-            </div>
-             <p style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">※この機能は現在開発中です。</p>
         </div>
     </main>
-
-    <footer class="main-footer">
-        <p>&copy; 2025 MatrixMaster Industries. All rights reserved.</p>
-    </footer>
-
-    <style>
-        .history-item { display: flex; align-items: center; background-color: var(--bg-input); padding: 1rem; border-radius: 5px; margin-bottom: 1rem; border-left: 4px solid var(--accent-secondary); }
-        .history-op { font-family: var(--font-mono); font-weight: 500; flex-grow: 1; }
-        .history-date { font-size: 0.9rem; color: var(--text-secondary); margin-right: 1rem; }
-    </style>
+    <footer class="main-footer"></footer>
+    <script src="./scripts/global.js"></script>
+    <script src="./scripts/history.js"></script>
 </body>
 </html>
