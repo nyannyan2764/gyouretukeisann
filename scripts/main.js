@@ -179,24 +179,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Toolbar listeners
-    document.querySelector('.matrix-area').addEventListener('click', (e) => {
-        const btn = e.target.closest('.tool-btn');
-        if (!btn) return;
-        const target = btn.dataset.target;
-        const action = btn.dataset.action;
-        const rows = parseInt(rowsInput.value);
-        const cols = parseInt(colsInput.value);
-        if (action === 'clear') for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = '';
-        else if (action === 'identity') {
-            if(rows !== cols) { displayError(new Error("Identity matrix must be square.")); return; }
-            for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = (i === j) ? '1' : '0';
-        } else if(action === 'transpose') {
-            if(rows !== cols) { displayError(new Error("In-place transpose is only for square matrices in this UI.")); return; }
-            const currentMatrix = getMatrixValues(target, rows, cols);
-            const transposed = math.transpose(currentMatrix);
-            for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = transposed[i-1][j-1];
+document.querySelector('.matrix-area').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tool-btn');
+    if (!btn) return;
+
+    const target = btn.dataset.target;
+    const action = btn.dataset.action;
+    const rows = parseInt(rowsInput.value);
+    const cols = parseInt(colsInput.value);
+
+    for (let i = 1; i <= rows; i++) {
+        for (let j = 1; j <= cols; j++) {
+            const input = document.getElementById(`${target}${i}${j}`);
+            
+            if (action === 'clear') {
+                input.value = '';
+            } else if (action === 'identity') {
+                if(rows !== cols) { displayError(new Error("Identity matrix must be square.")); return; }
+                input.value = (i === j) ? '1' : '0';
+            } 
+            
+            else if (action === 'fill-zeros') {
+                input.value = '0';
+            }
+                
+            else if (action === 'fill-random') {
+                // -9から9までのランダムな整数を生成
+                input.value = Math.floor(Math.random() * 19) - 9;
+            }
         }
-    });
+    }
+
+    // 転置は全要素を埋めた後に行う必要があるため、ループの外に移動
+    if (action === 'transpose') {
+        if(rows !== cols) { displayError(new Error("In-place transpose is only for square matrices in this UI.")); return; }
+        const currentMatrix = getMatrixValues(target, rows, cols);
+        const transposed = math.transpose(currentMatrix);
+        for (let i = 1; i <= rows; i++) {
+            for (let j = 1; j <= cols; j++) {
+                document.getElementById(`${target}${i}${j}`).value = transposed[i-1][j-1];
+            }
+        }
+    }
+});
 
     document.getElementById('copy-latex').addEventListener('click', () => {
         if (window.lastResult) {
