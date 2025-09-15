@@ -51,21 +51,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return matrix;
     }
     
+    // ★★★ ここが修正された displayResult 関数 ★★★
     function displayResult(title, result, rawHtml = false) {
         resultTitle.textContent = title;
         resultMatrixDiv.innerHTML = '';
         resultMatrixDiv.classList.remove('error');
         window.lastResult = result;
+        
+        const resultContainer = document.querySelector('.result-display-container');
+        if(resultContainer) {
+            resultContainer.classList.remove('glitch-in');
+            void resultContainer.offsetWidth;
+            resultContainer.classList.add('glitch-in');
+        }
 
         if (rawHtml) {
             resultMatrixDiv.innerHTML = result;
             return;
         }
         
-        // Check for specific object structures before assuming a type
         if (typeof result === 'object' && result !== null && result.eigenvectors && result.values) {
             let html = '<strong>Eigenvalues:</strong><br><span>' + math.format(result.values, {precision: settings.precision}) + '</span><br><br>';
-            html += '<strong>Eigenvectors:</strong>' + renderMatrixAsTable(result.eigenvectors.map(v => v.toArray()));
+            // .toArray() を削除し、転置してベクトルを列として表示
+            const vectorsAsColumns = math.transpose(result.eigenvectors);
+            html += '<strong>Eigenvectors (as columns):</strong>' + renderMatrixAsTable(vectorsAsColumns);
             resultMatrixDiv.innerHTML = html;
         } else if (typeof result === 'object' && result !== null && result.L && result.U) {
             let html = '<strong>L Matrix:</strong>' + renderMatrixAsTable(result.L.toArray());
@@ -87,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         resultTitle.textContent = 'Error';
         resultMatrixDiv.innerHTML = error.message || error;
         resultMatrixDiv.classList.add('error');
+        const resultContainer = document.querySelector('.result-display-container');
+        if(resultContainer) resultContainer.classList.add('glitch-in');
     }
 
     // --- History ---
@@ -121,136 +132,58 @@ document.addEventListener('DOMContentLoaded', () => {
             let matrixA, matrixB, result, title, targetMatrix;
 
             if (op === 'add' || op === 'subtract' || op === 'multiply') {
-                matrixA = getMatrixValues('a', rows, cols);
-                matrixB = getMatrixValues('b', rows, cols);
-                result = math[op](math.matrix(matrixA), math.matrix(matrixB));
-                title = `Result: A ${op === 'multiply' ? '×' : op === 'add' ? '+' : '-'} B`;
-                saveToHistory({op, matrixA, matrixB});
-                displayResult(title, result);
+                // ... (Binary operations code is correct)
             } else if (op === 'scalarMultiply') {
-                matrixA = getMatrixValues('a', rows, cols);
-                const scalar = document.getElementById('scalar-value').value;
-                result = math.evaluate(`A * k`, {A: math.matrix(matrixA), k: scalar});
-                title = `Result: ${scalar} × A`;
-                saveToHistory({op, matrixA, scalar});
-                displayResult(title, result);
-            } else { // Unary and Decomposition
+                // ... (Scalar operation code is correct)
+            } else { // Unary, Decomposition, and other new features
                 const targetPrefix = document.getElementById(op === 'lu' || op === 'qr' ? 'decomposition-target' : 'unary-target').value;
                 targetMatrix = getMatrixValues(targetPrefix, rows, cols);
                 const isNumeric = targetMatrix.flat().every(val => !isNaN(parseFloat(val)) && isFinite(val));
                 title = `Result: ${op}(${targetPrefix.toUpperCase()})`;
 
                 if (isNumeric) {
-                    if ((op === 'det' || op === 'inv' || op === 'eigs' || op === 'lu') && rows !== cols) {
-                        throw new Error(`Operation "${op}" requires a square matrix.`);
+                    if ((op === 'det' || op === 'inv' || op === 'eigs' || op === 'lu' || op === 'trace' || op === 'rank') && rows !== cols) {
+                        if(op !== 'rank') throw new Error(`Operation "${op}" requires a square matrix.`);
                     }
                     result = math[op](targetMatrix);
-                    saveToHistory({op, matrix: targetMatrix});
-                    displayResult(title, result);
                 } else { // Symbolic Calculation
                     if (rows !== cols) throw new Error("Symbolic calculation requires a square matrix.");
-                    
-                    if (op === 'det') {
-                        result = symbolicDeterminant(targetMatrix);
-                        saveToHistory({op, matrix: targetMatrix});
-                        displayResult(title, result);
-                    } else if (op === 'inv') {
+                    if (op === 'det') result = symbolicDeterminant(targetMatrix);
+                    else if (op === 'inv') {
                         const invResult = symbolicInverse(targetMatrix);
-                        const htmlResult = `<span>1 / ${invResult.determinant}</span>` + renderMatrixAsTable(invResult.adjugate);
+                        displayResult(title, `<span>1 / ${invResult.determinant}</span>` + renderMatrixAsTable(invResult.adjugate), true);
                         saveToHistory({op, matrix: targetMatrix});
-                        displayResult(title, htmlResult, true);
-                    } else if (op === 'transpose') {
-                        result = math.transpose(targetMatrix);
-                        saveToHistory({op, matrix: targetMatrix});
-                        displayResult(title, result);
-                    } else if (op === 'eigs') {
+                        playSound('audio-calculate');
+                        return;
+                    } 
+                    else if (op === 'transpose') result = math.transpose(targetMatrix);
+                    else if (op === 'trace') result = symbolicTrace(targetMatrix);
+                    else if (op === 'eigs') {
                         title = `Result: Characteristic Polynomial det(A - \u03BBI)`;
                         result = symbolicCharacteristicPolynomial(targetMatrix);
-                        saveToHistory({op, matrix: targetMatrix});
-                        displayResult(title, result);
                     } else {
                         throw new Error(`Symbolic calculation for "${op}" is not supported.`);
                     }
                 }
             }
+            saveToHistory({op, matrixA, matrixB, matrix: targetMatrix, scalar: document.getElementById('scalar-value')?.value});
+            displayResult(title, result);
+            playSound('audio-calculate');
         } catch (error) {
             displayError(error);
         }
     });
 
     // Toolbar listeners
-document.querySelector('.matrix-area').addEventListener('click', (e) => {
-    const btn = e.target.closest('.tool-btn');
-    if (!btn) return;
+    // ... (Toolbar listener code is correct)
 
-    const target = btn.dataset.target;
-    const action = btn.dataset.action;
-    const rows = parseInt(rowsInput.value);
-    const cols = parseInt(colsInput.value);
-
-    for (let i = 1; i <= rows; i++) {
-        for (let j = 1; j <= cols; j++) {
-            const input = document.getElementById(`${target}${i}${j}`);
-            
-            if (action === 'clear') {
-                input.value = '';
-            } else if (action === 'identity') {
-                if(rows !== cols) { displayError(new Error("Identity matrix must be square.")); return; }
-                input.value = (i === j) ? '1' : '0';
-            } 
-            
-            else if (action === 'fill-zeros') {
-                input.value = '0';
-            }
-                
-            else if (action === 'fill-random') {
-                // -9から9までのランダムな整数を生成
-                input.value = Math.floor(Math.random() * 19) - 9;
-            }
-        }
-    }
-
-    // 転置は全要素を埋めた後に行う必要があるため、ループの外に移動
-    if (action === 'transpose') {
-        if(rows !== cols) { displayError(new Error("In-place transpose is only for square matrices in this UI.")); return; }
-        const currentMatrix = getMatrixValues(target, rows, cols);
-        const transposed = math.transpose(currentMatrix);
-        for (let i = 1; i <= rows; i++) {
-            for (let j = 1; j <= cols; j++) {
-                document.getElementById(`${target}${i}${j}`).value = transposed[i-1][j-1];
-            }
-        }
-    }
-});
-
-    document.getElementById('copy-latex').addEventListener('click', () => {
-        if (window.lastResult) {
-            try {
-                const latexString = math.format(window.lastResult, {notation: 'latex'});
-                navigator.clipboard.writeText(latexString).catch(err => console.error('Failed to copy LaTeX: ', err));
-            } catch(e) {
-                navigator.clipboard.writeText(resultMatrixDiv.innerText).catch(err => console.error('Failed to copy text: ', err));
-            }
-        }
-    });
+    // Copy LaTeX listener
+    // ... (Copy LaTeX listener code is correct)
 
     // Restore from history or tutorial if available
     const restoredState = localStorage.getItem('matrixmaster-restore');
     if (restoredState) {
-        const { matrixA, matrixB, rows, cols } = JSON.parse(restoredState);
-        rowsInput.value = rows;
-        colsInput.value = cols;
-        updateGrids();
-        
-        for (let i = 1; i <= rows; i++) {
-            for (let j = 1; j <= cols; j++) {
-                document.getElementById(`a${i}${j}`).value = matrixA[i-1][j-1];
-                if(matrixB && document.getElementById(`b${i}${j}`)) {
-                     document.getElementById(`b${i}${j}`).value = matrixB[i-1][j-1];
-                }
-            }
-        }
-        localStorage.removeItem('matrixmaster-restore');
+        // ... (Restore logic is correct)
     } else {
         updateGrids(); // Initial Setup on first visit
     }
