@@ -261,3 +261,49 @@ h2 {
 .history-date { font-size: 0.9rem; color: var(--text-secondary); margin-right: 1rem; }
 .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border-color); }
 .solver-area { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center; margin: 2rem 0; }
+
+/* === Responsive Design for Mobile === */
+/* 768px is a common breakpoint for tablets and phones */
+@media (max-width: 768px) {
+
+    /* --- Header --- */
+    .main-header {
+        flex-direction: column; /* ロゴとナビゲーションを縦に並べる */
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .main-header nav {
+        margin-left: 0;
+        display: flex;
+        flex-wrap: wrap; /* ナビゲーションが画面幅を超える場合は折り返す */
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    /* --- Main Layout & Panels --- */
+    .main-content {
+        padding: 1rem; /* スマホ用に余白を減らす */
+    }
+
+    /* --- Matrix Area --- */
+    .matrix-area {
+        grid-template-columns: 1fr; /* 行列AとBを縦に積む */
+    }
+
+    /* --- Operations Panel --- */
+    .operations-panel {
+        grid-template-columns: 1fr 1fr; /* 演算グループを2列にする */
+    }
+    
+    /* --- Other Pages --- */
+    .setting-item {
+        flex-direction: column; /* 設定項目を縦に積む */
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .solver-area {
+        grid-template-columns: 1fr; /* 方程式ソルバーの要素を縦に積む */
+        text-align: center;
+    }
+}
