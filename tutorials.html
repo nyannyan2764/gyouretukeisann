@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チュートリアル - MatrixMaster</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <i class="fa-solid fa-table-cells"></i>
+            <h1>MatrixMaster</h1>
+        </div>
+        <nav>
+            <a href="./index.html">計算機</a>
+            <a href="./tutorials.html" class="active">チュートリアル</a>
+            <a href="./history.html">履歴</a>
+            <a href="./settings.html"><i class="fa-solid fa-gear"></i> 設定</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="content-wrapper" style="background-color: var(--bg-panel); padding: 2rem; border-radius: 8px;">
+            <h2 style="font-size: 2rem; color: var(--accent-secondary); border-bottom: 2px solid var(--accent-primary); padding-bottom: 1rem; margin-bottom: 2rem;"><i class="fa-solid fa-graduation-cap"></i> MatrixMasterの使い方</h2>
+            
+            <div class="tutorial-section">
+                <h3>1. 行列のサイズを設定する</h3>
+                <p>画面上部の「コントロールパネル」で、計算したい行列の行数と列数を設定します。1から8までのサイズに対応しています。</p>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>2. 行列に数や文字を入力する</h3>
+                <p>「行列A」「行列B」の各セルに、計算したい数値を入力します。<code>sin(x)</code>, <code>a+b</code>, <code>y</code> のような文字や式も入力可能で、自動的に記号計算として扱われます。</p>
+                 
+            </div>
+            
+            <div class="tutorial-section">
+                <h3>3. 演算を選択する</h3>
+                <p>実行したい計算ボタンをクリックします。「二項演算」は行列AとBを使い、「単項演算」や「スカラー演算」は対象の行列を選択して計算を実行します。</p>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>4. 結果を確認・活用する</h3>
+                <p>「計算結果」エリアに、整形された結果が表示されます。結果は「LaTeX」や「Text」形式でクリップボードにコピーしたり、「To A」ボタンで結果を行列Aにコピーして、連続した計算を行うことも可能です。</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 MatrixMaster Industries. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
