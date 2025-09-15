@@ -209,12 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Restore from history if available
+// ... (他のコードはそのまま) ...
+
+    // Restore from history or tutorial if available
     const restoredState = localStorage.getItem('matrixmaster-restore');
     if (restoredState) {
-        const { matrixA, matrixB } = JSON.parse(restoredState);
-        const rows = matrixA.length;
-        const cols = matrixA[0].length;
+        const { matrixA, matrixB, rows, cols } = JSON.parse(restoredState);
         rowsInput.value = rows;
         colsInput.value = cols;
         updateGrids();
