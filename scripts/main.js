@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Helper Functions ---
     function renderMatrixAsTable(matrixArray) {
-        let tableHTML = '<table style="display: inline-block; vertical-align: middle; margin-left: 15px;">';
+        let tableHTML = '<table>';
         matrixArray.forEach(row => {
             tableHTML += '<tr>';
             row.forEach(cell => {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return matrix;
     }
-
+    
     function displayResult(title, result, rawHtml = false) {
         resultTitle.textContent = title;
         resultMatrixDiv.innerHTML = '';
@@ -62,30 +62,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        if (typeof result === 'string' || typeof result === 'number') {
-             resultMatrixDiv.innerHTML = `<span>${math.format(result, {precision: settings.precision})}</span>`;
-        } else if (result.values && result.vectors) { // Eigenvalues/vectors
+        if (typeof result === 'object' && result !== null && result.eigenvectors && result.values) {
             let html = '<strong>Eigenvalues:</strong><br><span>' + math.format(result.values, {precision: settings.precision}) + '</span><br><br>';
-            html += '<strong>Eigenvectors:</strong>' + renderMatrixAsTable(result.vectors.map(v => v.toArray()));
+            html += '<strong>Eigenvectors:</strong>' + renderMatrixAsTable(result.eigenvectors.map(v => v.toArray()));
             resultMatrixDiv.innerHTML = html;
-        } else if (result.L && result.U) { // LU Decomposition
-             let html = '<strong>L Matrix:</strong>' + renderMatrixAsTable(result.L.toArray());
-             html += '<br><br><strong>U Matrix:</strong>' + renderMatrixAsTable(result.U.toArray());
+        } else if (typeof result === 'object' && result !== null && result.L && result.U) {
+            let html = '<strong>L Matrix:</strong>' + renderMatrixAsTable(result.L.toArray());
+            html += '<br><br><strong>U Matrix:</strong>' + renderMatrixAsTable(result.U.toArray());
             resultMatrixDiv.innerHTML = html;
-        } else if(result.Q && result.R) { // QR Decomposition
+        } else if(typeof result === 'object' && result !== null && result.Q && result.R) {
             let html = '<strong>Q Matrix:</strong>' + renderMatrixAsTable(result.Q.toArray());
-             html += '<br><br><strong>R Matrix:</strong>' + renderMatrixAsTable(result.R.toArray());
+            html += '<br><br><strong>R Matrix:</strong>' + renderMatrixAsTable(result.R.toArray());
             resultMatrixDiv.innerHTML = html;
-        }
-        else { // Standard Matrix
-             const arrayResult = result.toArray ? result.toArray() : result;
+        } else if (typeof result === 'string' || typeof result === 'number') {
+            resultMatrixDiv.innerHTML = `<span>${result}</span>`;
+        } else {
+            const arrayResult = result.toArray ? result.toArray() : result;
             resultMatrixDiv.innerHTML = renderMatrixAsTable(arrayResult);
         }
     }
 
     function displayError(error) {
         resultTitle.textContent = 'Error';
-        resultMatrixDiv.innerHTML = error.message;
+        resultMatrixDiv.innerHTML = error.message || error;
         resultMatrixDiv.classList.add('error');
     }
 
@@ -127,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 title = `Result: A ${op === 'multiply' ? '×' : op === 'add' ? '+' : '-'} B`;
                 saveToHistory({op, matrixA, matrixB});
                 displayResult(title, result);
-
             } else if (op === 'scalarMultiply') {
                 matrixA = getMatrixValues('a', rows, cols);
                 const scalar = document.getElementById('scalar-value').value;
@@ -135,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 title = `Result: ${scalar} × A`;
                 saveToHistory({op, matrixA, scalar});
                 displayResult(title, result);
-
             } else { // Unary and Decomposition
                 const targetPrefix = document.getElementById(op === 'lu' || op === 'qr' ? 'decomposition-target' : 'unary-target').value;
                 targetMatrix = getMatrixValues(targetPrefix, rows, cols);
@@ -149,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     result = math[op](targetMatrix);
                     saveToHistory({op, matrix: targetMatrix});
                     displayResult(title, result);
-                } else { // Symbolic Calculation
+                } else { // ★★★ ここからが書き換えられた記号計算のロジック ★★★
                     if (rows !== cols) throw new Error("Symbolic calculation requires a square matrix.");
                     
                     if (op === 'det') {
@@ -165,7 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         result = math.transpose(targetMatrix);
                         saveToHistory({op, matrix: targetMatrix});
                         displayResult(title, result);
-                    } else {
+                    } else if (op === 'eigs') { // ★★★ 固有値の記号計算をここに追加 ★★★
+                        title = `Result: Characteristic Polynomial det(A - \u03BBI)`;
+                        result = symbolicCharacteristicPolynomial(targetMatrix);
+                        saveToHistory({op, matrix: targetMatrix});
+                        displayResult(title, result);
+                    }
+                    else {
                         throw new Error(`Symbolic calculation for "${op}" is not supported.`);
                     }
                 }
@@ -179,15 +182,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.matrix-area').addEventListener('click', (e) => {
         const btn = e.target.closest('.tool-btn');
         if (!btn) return;
-
         const target = btn.dataset.target;
         const action = btn.dataset.action;
         const rows = parseInt(rowsInput.value);
         const cols = parseInt(colsInput.value);
-
-        if (action === 'clear') {
-            for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = '';
-        } else if (action === 'identity') {
+        if (action === 'clear') for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = '';
+        else if (action === 'identity') {
             if(rows !== cols) { displayError(new Error("Identity matrix must be square.")); return; }
             for (let i = 1; i <= rows; i++) for (let j = 1; j <= cols; j++) document.getElementById(`${target}${i}${j}`).value = (i === j) ? '1' : '0';
         } else if(action === 'transpose') {
@@ -208,8 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-// ... (他のコードはそのまま) ...
 
     // Restore from history or tutorial if available
     const restoredState = localStorage.getItem('matrixmaster-restore');
