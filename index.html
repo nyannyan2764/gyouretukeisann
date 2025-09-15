@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MatrixMaster - 高機能行列計算エンジン</title>
+    <title data-i18n="calculator_title">計算機 - MatrixMaster</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
 </head>
-<body>
+<body class="theme-hologram">
+    <canvas id="background-canvas"></canvas>
 
     <header class="main-header">
         <div class="logo">
@@ -19,44 +20,44 @@
             <h1>MatrixMaster</h1>
         </div>
         <nav>
-          <a href="./index.html" class="active">計算機</a>
-          <a href="./tutorials.html">チュートリアル</a>
-          <a href="./history.html">履歴</a>
-          <a href="./settings.html"><i class="fa-solid fa-gear"></i> 設定</a>
+            <a href="./index.html" class="active" data-i18n="nav_calculator">計算機</a>
+            <a href="./solver.html" data-i18n="nav_solver">方程式ソルバー</a>
+            <a href="./tutorials.html" data-i18n="nav_tutorials">チュートリアル</a>
+            <a href="./history.html" data-i18n="nav_history">履歴</a>
+            <a href="./settings.html"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">設定</span></a>
         </nav>
     </header>
 
     <main class="main-content">
-        <div class="controls-panel">
-            <h2><i class="fa-solid fa-sliders"></i> コントロールパネル</h2>
+        <div class="panel controls-panel">
+            <h2 data-i18n="control_panel_title"><i class="fa-solid fa-sliders"></i> コントロールパネル</h2>
             <div class="control-group">
-                <label for="rows">行数 (Rows)</label>
+                <label for="rows" data-i18n="control_rows">行数</label>
                 <input type="number" id="rows" value="2" min="1" max="8">
             </div>
             <div class="control-group">
-                <label for="cols">列数 (Cols)</label>
+                <label for="cols" data-i18n="control_cols">列数</label>
                 <input type="number" id="cols" value="2" min="1" max="8">
             </div>
         </div>
 
         <div class="matrix-area">
-            <div class="matrix-wrapper" id="matrix-a-wrapper">
-                <div class="matrix-header">
+            <div class="panel matrix-wrapper" id="matrix-a-wrapper">
+                <div class="panel-header">
                     <h2>行列 A</h2>
                     <div class="matrix-toolbar">
-                        <button class="tool-btn" data-target="a" data-action="identity" title="単位行列を生成"><i class="fa-solid fa-eye"></i></button>
+                         <button class="tool-btn" data-target="a" data-action="identity" title="単位行列"><i class="fa-solid fa-eye"></i></button>
                         <button class="tool-btn" data-target="a" data-action="transpose" title="転置"><i class="fa-solid fa-retweet"></i></button>
                         <button class="tool-btn" data-target="a" data-action="clear" title="クリア"><i class="fa-solid fa-eraser"></i></button>
                     </div>
                 </div>
                 <div class="matrix-grid-container" id="matrix-a-container"></div>
             </div>
-
-            <div class="matrix-wrapper" id="matrix-b-wrapper">
-                <div class="matrix-header">
+            <div class="panel matrix-wrapper" id="matrix-b-wrapper">
+                 <div class="panel-header">
                     <h2>行列 B</h2>
                     <div class="matrix-toolbar">
-                        <button class="tool-btn" data-target="b" data-action="identity" title="単位行列を生成"><i class="fa-solid fa-eye"></i></button>
+                         <button class="tool-btn" data-target="b" data-action="identity" title="単位行列"><i class="fa-solid fa-eye"></i></button>
                         <button class="tool-btn" data-target="b" data-action="transpose" title="転置"><i class="fa-solid fa-retweet"></i></button>
                         <button class="tool-btn" data-target="b" data-action="clear" title="クリア"><i class="fa-solid fa-eraser"></i></button>
                     </div>
@@ -65,60 +66,52 @@
             </div>
         </div>
 
-        <div class="operations-panel">
+        <div class="panel operations-panel">
             <div class="op-group">
-                <h3>二項演算 (A, B)</h3>
+                <h3 data-i18n="op_binary">二項演算 (A, B)</h3>
                 <button class="op-btn" data-op="add">A + B</button>
                 <button class="op-btn" data-op="subtract">A - B</button>
                 <button class="op-btn" data-op="multiply">A × B</button>
-                <button class="op-btn" data-op="dotMultiply">A .* B (要素積)</button>
             </div>
             <div class="op-group">
-                <h3>単項演算</h3>
-                <div class="unary-selection">
-                    <select id="unary-target">
-                        <option value="a" selected>行列 A</option>
-                        <option value="b">行列 B</option>
-                    </select>
-                    <div class="unary-buttons">
-                        <button class="op-btn" data-op="det">行列式</button>
-                        <button class="op-btn" data-op="inv">逆行列</button>
-                        <button class="op-btn" data-op="transpose">転置</button>
-                        <button class="op-btn" data-op="trace">トレース</button>
-                    </div>
-                </div>
+                <h3 data-i18n="op_unary">単項演算</h3>
+                <select id="unary-target"><option value="a" selected>行列 A</option><option value="b">行列 B</option></select>
+                <button class="op-btn" data-op="det" data-i18n="op_det">行列式</button>
+                <button class="op-btn" data-op="inv" data-i18n="op_inv">逆行列</button>
+                <button class="op-btn" data-op="eigs" data-i18n="op_eigs">固有値/ベクトル</button>
             </div>
              <div class="op-group">
-                <h3>スカラー演算</h3>
-                 <div class="scalar-input-group">
-                    <label for="scalar-value">k =</label>
-                    <input type="text" id="scalar-value" value="2" placeholder="数値 or 文字">
-                 </div>
+                <h3 data-i18n="op_scalar">スカラー演算</h3>
+                <input type="text" id="scalar-value" value="k" placeholder="k">
                 <button class="op-btn" data-op="scalarMultiply">k × A</button>
-                <button class="op-btn" data-op="scalarDivide">A / k</button>
+            </div>
+             <div class="op-group">
+                <h3 data-i18n="op_decomposition">行列分解</h3>
+                 <select id="decomposition-target"><option value="a" selected>行列 A</option><option value="b">行列 B</option></select>
+                <button class="op-btn" data-op="lu" data-i18n="op_lu">LU分解</button>
+                <button class="op-btn" data-op="qr" data-i18n="op_qr">QR分解</button>
             </div>
         </div>
-
-        <div class="result-wrapper">
-            <div class="result-header">
-                <h2><i class="fa-solid fa-square-root-variable"></i> 計算結果</h2>
+        
+        <div class="panel result-wrapper">
+             <div class="panel-header">
+                <h2 data-i18n="result_title"><i class="fa-solid fa-square-root-variable"></i> 計算結果</h2>
                 <div class="result-toolbar">
-                    <button id="copy-latex" class="tool-btn" title="LaTeX形式でコピー"><i class="fa-solid fa-scroll"></i> LaTeX</button>
-                    <button id="copy-text" class="tool-btn" title="テキスト形式でコピー"><i class="fa-solid fa-copy"></i> Text</button>
-                    <button id="result-to-a" class="tool-btn" title="結果を行列Aにコピー"><i class="fa-solid fa-arrow-up-from-bracket"></i> To A</button>
+                    <button id="copy-latex" class="tool-btn" title="LaTeX形式でコピー">LaTeX</button>
                 </div>
             </div>
             <div class="result-display-container">
-                <p id="result-title">ここに計算結果が表示されます。</p>
+                <p id="result-title-text" data-i18n="result_placeholder">ここに計算結果が表示されます。</p>
                 <div id="result-matrix"></div>
             </div>
         </div>
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 MatrixMaster Industries. All rights reserved.</p>
+        <p>&copy; 2025 MatrixMaster Industries. All Rights Reserved.</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="./scripts/global.js"></script>
+    <script src="./scripts/main.js"></script>
 </body>
 </html>
