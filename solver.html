@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title data-i18n="solver_title">方程式ソルバー - MatrixMaster</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+</head>
+<body class="theme-hologram">
+    <canvas id="background-canvas"></canvas>
+    <header class="main-header">
+        <div class="logo">
+            <i class="fa-solid fa-table-cells"></i>
+            <h1>MatrixMaster</h1>
+        </div>
+        <nav>
+            <a href="./index.html" data-i18n="nav_calculator">計算機</a>
+            <a href="./solver.html" class="active" data-i18n="nav_solver">方程式ソルバー</a>
+            <a href="./tutorials.html" data-i18n="nav_tutorials">チュートリアル</a>
+            <a href="./history.html" data-i18n="nav_history">履歴</a>
+            <a href="./settings.html"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">設定</span></a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="panel solver-panel">
+            <div class="panel-header">
+                <h2 data-i18n="solver_main_title"><i class="fa-solid fa-equals"></i> 連立一次方程式ソルバー (Ax = b)</h2>
+            </div>
+            <div class="control-group">
+                <label for="size" data-i18n="solver_size">式の数（次元）</label>
+                <input type="number" id="size" value="3" min="2" max="8">
+            </div>
+            <div class="solver-area">
+                <div class="solver-matrix">
+                    <h3>係数行列 A</h3>
+                    <div id="matrix-a-container" class="matrix-grid-container"></div>
+                </div>
+                <div class="solver-vector" style="font-size: 2rem; font-weight: bold;">
+                    x
+                </div>
+                <div class="solver-vector" style="font-size: 2rem; font-weight: bold;">
+                    =
+                </div>
+                <div class="solver-matrix">
+                    <h3>定数ベクトル b</h3>
+                    <div id="vector-b-container" class="matrix-grid-container"></div>
+                </div>
+            </div>
+            <button id="solve-button" class="op-btn" data-i18n="solver_solve_btn">解を求める (x)</button>
+        </div>
+         <div class="panel result-wrapper">
+             <div class="panel-header">
+                <h2 data-i18n="result_title"><i class="fa-solid fa-square-root-variable"></i> 計算結果</h2>
+            </div>
+            <div class="result-display-container">
+                <p id="result-title-text" data-i18n="result_placeholder">ここに計算結果が表示されます。</p>
+                <div id="result-matrix"></div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="main-footer"></footer>
+
+    <script src="./scripts/global.js"></script>
+    <script src="./scripts/solver.js"></script>
+</body>
+</html>
