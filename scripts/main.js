@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Check for specific object structures before assuming a type
         if (typeof result === 'object' && result !== null && result.eigenvectors && result.values) {
             let html = '<strong>Eigenvalues:</strong><br><span>' + math.format(result.values, {precision: settings.precision}) + '</span><br><br>';
             html += '<strong>Eigenvectors:</strong>' + renderMatrixAsTable(result.eigenvectors.map(v => v.toArray()));
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     result = math[op](targetMatrix);
                     saveToHistory({op, matrix: targetMatrix});
                     displayResult(title, result);
-                } else { // ★★★ ここからが書き換えられた記号計算のロジック ★★★
+                } else { // Symbolic Calculation
                     if (rows !== cols) throw new Error("Symbolic calculation requires a square matrix.");
                     
                     if (op === 'det') {
@@ -162,13 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         result = math.transpose(targetMatrix);
                         saveToHistory({op, matrix: targetMatrix});
                         displayResult(title, result);
-                    } else if (op === 'eigs') { // ★★★ 固有値の記号計算をここに追加 ★★★
+                    } else if (op === 'eigs') {
                         title = `Result: Characteristic Polynomial det(A - \u03BBI)`;
                         result = symbolicCharacteristicPolynomial(targetMatrix);
                         saveToHistory({op, matrix: targetMatrix});
                         displayResult(title, result);
-                    }
-                    else {
+                    } else {
                         throw new Error(`Symbolic calculation for "${op}" is not supported.`);
                     }
                 }
